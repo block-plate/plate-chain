@@ -5,9 +5,8 @@ services:
     image: couchbase
     container_name: db001
     user: couchbase
-    networks:
-      mainnet:
-        ipv4_address: "172.24.255.20"
+    ports:
+      - "8091:8091"
 
   db002:
     image: couchbase
