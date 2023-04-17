@@ -16,7 +16,7 @@ const server = async(config: any, sdk: any, db: any) => {
     
     app.use(cors(corsOptions));
 
-    app.use(express.urlencoded({ extended: true }));
+    app.use(express.urlencoded({ extended: false }));
     app.use(express.json());
 
     app.use((req:any, res, next) => {

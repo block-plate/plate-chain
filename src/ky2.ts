@@ -1,11 +1,13 @@
-import { generateNextBlock, getGenesisBlock, isValidBlock } from "./blockChain";
+// import { generateNextBlock, getGenesisBlock, isValidBlock } from "./blockChain";
 import loggerSystem from "./config/logger";
 import initKafka from "./kafka/initKafka";
 import { Consumer, Producer } from "kafkajs";
 import { db } from "./database/db";
 import server from '../console/server'
 import channel from '../console/channel'
-import { Block } from "./block";
+import { getLength } from './blockChain';
+import { Block } from "./blockchain/block";
+import { DIFFICULTY_ADJUSTMENT_INTERVAL } from "./blockchain/genesis";
 
 export default class {
     consumer!: Consumer
@@ -45,8 +47,9 @@ export default class {
       try{
         const {rows} = await this.db.getBlock();
         console.log(rows);
-      if(rows.length === 0 ){ // Blockchain이 비어있다면
-          const genesisBlock = getGenesisBlock();
+        // Blockchain이 비어있다면
+      if(rows.length === 0 ){ 
+          const genesisBlock = Block.getGenesisBlock();
           await this.db.addBlock(genesisBlock);
           this.logger.info("Add Genesis Block!");
         }
@@ -68,21 +71,25 @@ export default class {
         return role === r;
     }
 
-    async addBlockToLedger(block: Block) {
+    async addBlockToLedger(newBlock: Block) {
+       //TODO: Block 추가시 바로 추가 안되도록 변경
         try {
-          const valid = isValidBlock(this.db, this.logger, block);
+          const previousBlock: Block = await this.db.getLeastBlock();
+
+          
+          const valid = Block.isValidNewBlock(newBlock, previousBlock);
           if (!valid) {
-            const invalidMsg = (block && block.header.index) ? `Skipping invalid block ${block.header.index}.` : 'Skipping an invalid block.';
+            const invalidMsg = (newBlock && newBlock.height) ? `Skipping invalid block ${newBlock.height}.` : 'Skipping an invalid block.';
             this.logger.error(invalidMsg);
             return false;
           }
-          this.logger.debug(`Received block ${block.header.index}.`);
+          this.logger.debug(`Received block ${newBlock.height}.`);
           // Store block on db
-          await this.db.addBlock(block);
-          this.logger.info(`Added new block ${block.header.index}.`);
-          this.logger.debug('Added new block', block.header.index);
+          await this.db.addBlock(newBlock);
+          this.logger.info(`Added new block ${newBlock.height}.`);
+          this.logger.debug('Added new block', newBlock.height);
           // Return the new block
-          return block.header.index;
+          return newBlock.height
         } catch(err) {
           this.logger.error(err);
         }
@@ -104,16 +111,16 @@ export default class {
 
     async sendNewBlock(data: any) {
         try {
-          const { organization } = this.configs;
+          const previousBlock: Block = await this.db.getLeastBlock();
+          const newblock = await Block.generateBlock(previousBlock, data);
 
-          const newblock = await generateNextBlock(this.db, organization, data);
-          this.logger.info(`Building a block for the transaction ${newblock.header.index} sended by organization ${organization}.`);
+          this.logger.info(`Building a block for the transaction ${newblock.height} sended.`);
           this.logger.debug('Built new block', newblock);
           // Publish block
           const topic = this.configs.kafka.topics.pending;
           await this.__produce(topic, newblock);
           // Return the new block
-          return newblock.header.index;
+          return newblock.height;
         } catch(err) {
           this.logger.error(err);
         }
@@ -132,5 +139,20 @@ export default class {
         } catch(err) {
             this.logger.error(err);
         }
+    }
+
+    async getAdjustmentBlock() {
+      const currentLength = getLength(this.db);
+
+      if(currentLength < DIFFICULTY_ADJUSTMENT_INTERVAL ){
+        const adjustmentBlock: Block = Block.getGenesisBlock();
+
+        return adjustmentBlock;
+
+      } else {
+        const adjustmentBlock = this.db.getBlockByHeight(currentLength - DIFFICULTY_ADJUSTMENT_INTERVAL);
+        
+        return adjustmentBlock;
+      }
     }
 }

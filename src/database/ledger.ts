@@ -1,5 +1,5 @@
 import { Ottoman, start, close, Query } from "ottoman";
-import { Block } from "../block";
+import { Block } from "../blockchain/block"
 import { BlockModel } from "./BlockModel";
 
 export default class {
@@ -8,7 +8,26 @@ export default class {
     constructor(ottoman: Ottoman){
         this.ottoman = ottoman;
     }
+    
+    async getBlocks(): Promise<any> {
+        try{
+            const data = await BlockModel.find();
+            
+            return data;
+        } catch(error){
+            console.log(error);
+        }
+    }
 
+    async getBlockByHeight(height: number): Promise<any> {
+        try{
+            const data = await BlockModel.find({height});
+            
+            return data;
+        } catch(error){
+            console.log(error);
+        }
+    }
     async getBlock(user?: string, offset?: number, limit?: number): Promise<any>{
         try{
             if(!user){
@@ -42,12 +61,12 @@ export default class {
         const runAsync = async () => {
             console.log('saving...');
             await myBlock.save();
-            console.log(`SUCCESS: user ${block.header.index} added!`);
+            console.log(`SUCCESS: user ${block.height} added!`);
         }
           
         this.ottoman.start()
             .then(runAsync)
-            .catch((error) => console.log('An error happened: ' + JSON.stringify(error)))
+            .catch((error) => console.log(error))
         
     }
 }
