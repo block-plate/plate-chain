@@ -5,7 +5,7 @@ import { Consumer, Producer } from "kafkajs";
 import { db } from "./database/db";
 import server from '../console/server'
 import channel from '../console/channel'
-import { getLength } from './blockChain';
+import { getLength } from './blockchain/blockChain';
 import { Block } from "./blockchain/block";
 import { DIFFICULTY_ADJUSTMENT_INTERVAL } from "./blockchain/genesis";
 
@@ -27,11 +27,11 @@ export default class {
         try{
             const {role, id, webconsole} = this.configs;
             if(role === 'peer'){
-              const {consumer, producer} = await initKafka(this);
-              this.db = await db(this.configs.db, this.logger);
+              //const {consumer, producer} = await initKafka(this);
+              //this.db = await db(this.configs.db, this.logger);
               this.server = await server(this.configs, this, this.db);
-              this.consumer = consumer;
-              this.producer = producer;
+              //this.consumer = consumer;
+              //this.producer = producer;
               await this.initBlockchain();
             }
             else if(role === 'channel'){

@@ -16,11 +16,13 @@
     "module": "commonjs",
     "outDir": "dist",
     "rootDir": "./",
+    "typeRoots": ["./@type/"]
   },
   "include": [
     "src/**/*",
-    "console/server/**/*"
-],
+    "console/server/**/*", 
+    "@types"
+  ],
   "exclude": [
     "console/frontend/**/*",
     "node_modules"

@@ -9,3 +9,9 @@ const api = axios.create({
 export const getBlocks = () => api.get(`/block`)
 
 export const login = (data) => api.post(`/auth/login`, data);
+
+export const getWallets = () => api.get(`/wallet/`);
+
+export const getWallet = (account) => api.get(`/wallet/${account}`);
+
+export const sendTransaction = (data) => api.get('wallet/tx', data);

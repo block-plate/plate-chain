@@ -68,9 +68,9 @@ const Main = () => {
     const {blocks} = useBlock();
     const {handleLogout} = useAuth();
 
-    if(localStorage.getItem('login') !== 'true'){
-        return <Redirect to='/login'/>
-    }
+    // if(localStorage.getItem('login') !== 'true'){
+    //     return <Redirect to='/login'/>
+    // }
 
     const blockList = blocks.map((block: any) => {
         const {id, header, data} = block;
