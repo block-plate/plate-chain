@@ -8,7 +8,7 @@ export const GENESIS: IBlock = {
     difficulty: 0,
     nonce: 0,
     data: [
-      "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks",
+      
     ],
   };
 

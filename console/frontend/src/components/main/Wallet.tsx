@@ -105,7 +105,7 @@ const Wallet = () => {
                         options={walletOptions}
                         onChange={onSelectAccount}
                     />
-                    <h1>{wallet.account ? <img src='/check-badge.svg'></img> : <span style={{width: '0'}}></span>}{wallet.balance?.toFixed(2)} <span>PTC</span></h1>
+                    <h1>{wallet.account ? <img src='/check-badge.svg'></img> : <span style={{width: '0'}}></span>}{Number(wallet.balance).toFixed(2)} <span>PTC</span></h1>
                 </div>
                 <div className='send-box card'>
                     <h3>Send Coin</h3>

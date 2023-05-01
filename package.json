@@ -23,6 +23,7 @@
     "url": "https://github.com/osamhack2022/CLOUD_WEB_IOT_KeepYourEndeavor_Moment"
   },
   "dependencies": {
+    "@types/request": "^2.48.8",
     "@types/yaml": "^1.9.7",
     "axios": "^1.1.2",
     "cors": "^2.8.5",
@@ -31,6 +32,7 @@
     "dotenv-safe": "^8.2.0",
     "elliptic": "^6.5.4",
     "express": "^4.18.1",
+    "hex-to-binary": "^1.0.1",
     "kafkajs": "^2.2.0",
     "merkle": "^0.6.0",
     "moment": "^2.29.4",
@@ -38,6 +40,7 @@
     "ottoman": "^2.2.1",
     "query-string": "^7.1.1",
     "radom": "^0.1.1",
+    "request": "^2.88.2",
     "uuid": "^9.0.0",
     "winston": "^3.8.2",
     "winston-daily-rotate-file": "^4.7.1",

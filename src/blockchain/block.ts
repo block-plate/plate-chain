@@ -1,22 +1,29 @@
 import { SHA256 } from 'crypto-js';
 import merkle from 'merkle';
 import { BlockHeader } from './blockHeader';
+import { BLOCK_GENERATION_INTERVAL, BLOCK_GENERATION_TIME_UNIT, DIFFICULTY_ADJUSTMENT_INTERVAL, GENESIS } from './genesis';
+
+import hexToBinary from 'hex-to-binary';
 
 export class Block extends BlockHeader implements IBlock{
     public merkleRoot: string;
     public hash: string;
     public nonce: number;
     public difficulty: number;
-    public data: string[];
+    public data: ITransaction[];
     
-    constructor(_previousBlock: Block, _data: string[]){
+    constructor(_previousBlock: Block, _data: ITransaction[], _adjustmentBlock: Block){
         super(_previousBlock);
 
         const merkleRoot = Block.getMerkleRoot(_data);
         this.merkleRoot = merkleRoot;
         this.hash = Block.createBlockHash(this);
         this.nonce = 0;
-        this.difficulty = 0;
+        this.difficulty = Block.getDifficulty(
+            this,
+            _adjustmentBlock,
+            _previousBlock,
+        );
         this.data = _data;
     }
 
@@ -32,9 +39,38 @@ export class Block extends BlockHeader implements IBlock{
         return SHA256(values).toString();
     }
 
-    public static generateBlock(_previousBlock: Block, _data: string[]): Block{
-        const _generateBlock = new Block(_previousBlock, _data);
-        return _generateBlock;
+    public static generateBlock(
+        _previousBlock: Block, 
+        _data: ITransaction[],
+        _adjustmentBlock: Block,
+    ): Block{
+        const _generateBlock = new Block(_previousBlock, _data, _adjustmentBlock);
+
+        const newBlock = Block.findBlock(_generateBlock);
+
+        return newBlock;
+    }
+
+    public static findBlock(_generateBlock: Block){
+        let hash: string;
+        let nonce: number = 0;
+
+        while(true) {
+            nonce++;
+            _generateBlock.nonce = nonce;
+            hash = Block.createBlockHash(_generateBlock);
+
+            const binary: string = hexToBinary(hash);
+
+            const result: boolean = binary.startsWith(
+                "0".repeat(_generateBlock.difficulty)
+            );
+
+            if(result){
+                _generateBlock.hash = hash;
+                return _generateBlock;
+            }
+        }
     }
 
     public static isValidNewBlock(
@@ -51,30 +87,33 @@ export class Block extends BlockHeader implements IBlock{
         return {isError: false, value: _newBlock }
     }
 
-    public static getGenesisBlock(): IBlock {
-        const version = '1.0.0';
-        const height = 0;
-        const hash =  '0'.repeat(64);
-        const previousHash = '0'.repeat(64);
-        const timestamp = Math.floor(1663897055 / 1000) // Fri Sep 23 2022 10:37:35 GMT+0900 (대한민국 표준시)
-        const data = ["This is GenesisBlock that platechain made by EUNSOL in Sejong Univ"];
-        const merkleTree = merkle("sha256").sync(data);
-        const merkleRoot = merkleTree.root() || '0'.repeat(64);
-        const nonce = 0;
-        const difficulty = 0;
-      
-        const block = {
-          difficulty, 
-          version, 
-          height, 
-          previousHash, 
-          hash, 
-          timestamp, 
-          merkleRoot, 
-          data, 
-          nonce
-        };
-      
-        return block;
+    public static getGenesisBlock(): Block {
+        return GENESIS;
     }
+
+    public static getDifficulty(
+        _newBlock: Block,
+        _adjustmentBlock: Block,
+        _previousBlock: Block,
+    ) : number{
+        if( _newBlock.height <= 9 ) return 0;
+        if( _newBlock.height <= 19 ) return 1;
+
+        // 10번째 배수의 블록에 한에서만 난이도 조절 
+        // 10개 묶음씩 같은 난이도를 가지게됨
+        if( _newBlock.height % DIFFICULTY_ADJUSTMENT_INTERVAL !== 0){
+            return _previousBlock.difficulty;
+        }
+
+        const timeTaken: number = _newBlock.timestamp - _adjustmentBlock.timestamp;
+        const timeExpected: number = 
+            BLOCK_GENERATION_INTERVAL *
+            BLOCK_GENERATION_TIME_UNIT * 
+            DIFFICULTY_ADJUSTMENT_INTERVAL // 6000
+
+        if(timeTaken < timeExpected / 2 ) return _adjustmentBlock.difficulty + 1;
+        else if(timeTaken > timeExpected * 2  ) return _adjustmentBlock.difficulty - 1;
+
+        return _adjustmentBlock.difficulty;
+    }   
 }

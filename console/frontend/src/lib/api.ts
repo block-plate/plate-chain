@@ -3,7 +3,7 @@ import axios from 'axios';
 axios.defaults.withCredentials = true;
 
 const api = axios.create({
-    baseURL: `/v1`,
+    baseURL: `http://localhost:3002/v1`,
 });
 
 export const getBlocks = () => api.get(`/block`)
@@ -14,4 +14,4 @@ export const getWallets = () => api.get(`/wallet/`);
 
 export const getWallet = (account) => api.get(`/wallet/${account}`);
 
-export const sendTransaction = (data) => api.get('wallet/tx', data);
+export const sendTransaction = (data) => api.post('/transaction', data);

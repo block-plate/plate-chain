@@ -14,13 +14,14 @@ import moment  from 'moment';
 import { json } from 'express';
 import {Redirect} from 'react-router-dom'
 import useAuth from '../../hooks/user/useAuth';
+import {Link} from 'react-router-dom';
 
 const MainBlock = styled.div`
-    background-color: rgba(0, 0, 0, 0.03);
-    
+    background-color: #F0F4FE;
+    height: 100vh;
     header{
         padding: 2rem;
-        background-color: white;
+        background-color: #F0F4FE;
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
@@ -29,7 +30,7 @@ const MainBlock = styled.div`
         }
     }
     .card-group{
-        background-color: white;
+        background-color: #F0F4FE;
         display: flex;
         flex-direction: row;
         margin-top: 1.5rem;
@@ -43,6 +44,7 @@ const MainBlock = styled.div`
             font-size: 3rem;
             font-weight: bold;
             min-width: 15rem;
+            background: white;
             span{
                 font-weight: lighter;
                 font-size: 1.5rem;
@@ -52,10 +54,10 @@ const MainBlock = styled.div`
     }
     .list{
         padding: 2rem;
-        background-color: white;
+        background-color: #F0F4FE;
     }
     footer{
-        background-color: white;
+        background-color: #F0F4FE;
         display: flex;
         justify-content: center;
     }
@@ -95,9 +97,16 @@ const Main = () => {
 
                     </div>
                     <img src='/logo.png'/>
-                    <Button secondary onClick={()=>handleLogout()}>
-                        로그아웃
-                    </Button>
+                    <div className='btn-group'>
+                        <Link to='/wallet'>
+                            <Button primary>
+                                Wallet
+                            </Button>
+                        </Link>
+                        <Button secondary onClick={()=>handleLogout()}>
+                            Logout
+                        </Button>
+                    </div>
                 </header>
                 <div className='card-group'>
                     <div className='card'>

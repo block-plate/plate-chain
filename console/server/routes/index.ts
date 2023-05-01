@@ -1,6 +1,7 @@
 import express from "express";
 import fs from "fs";
 import path from "path";
+import { Wallet } from "../../../src/wallet";
 
 const router = express.Router();
 const indexJs = path.basename(__filename);
@@ -13,6 +14,16 @@ router.get('/dashboard', async(req, res)=> {
     console.log(e);
   }
 });
+
+router.get('/getBalance', (req: any, res) => {
+  const { account } = req.body;
+
+  const balance = Wallet.getBalance(account, req.sdk.getUnspentTxOuts);
+
+  res.json({
+    balance,
+  })
+})
 
 console.log(fs.readdirSync(__dirname), indexJs);
 

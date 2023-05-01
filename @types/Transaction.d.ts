@@ -5,7 +5,7 @@ declare interface ITxOut {
 
 declare interface ITxIn {
     txOutId: string;
-    txOutIndex: string;
+    txOutIndex: number;
     signature?: string | undefined;
 }
 
@@ -17,7 +17,7 @@ declare interface ITransaction {
 
 declare interface IUnspentTxOut {
     txOutId: string;
-    txOutIndex: string;
+    txOutIndex: number;
     account: string;
     amount: number;
 }

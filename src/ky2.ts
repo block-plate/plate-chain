@@ -8,19 +8,27 @@ import channel from '../console/channel'
 import { getLength } from './blockchain/blockChain';
 import { Block } from "./blockchain/block";
 import { DIFFICULTY_ADJUSTMENT_INTERVAL } from "./blockchain/genesis";
+import { TxIn } from "./transaction/txin";
+import { TxOut } from "./transaction/txout";
+import { Transaction } from "./transaction/transaction";
+import { UnspentTxOut } from "./transaction/unspentTxOut";
 
 export default class {
+    unspentTxOuts: IUnspentTxOut[];
+    transactionPools: ITransaction[];
     consumer!: Consumer
     producer!: Producer
     logger: any;
     configs: any;
     db: any;
     server: any;
-    
+
     constructor(configs: any){
         const { role, id, logs } = configs;
         this.configs = configs;
         this.logger = loggerSystem(role, id, logs.level, logs.path, logs.console);
+        this.unspentTxOuts = [];
+        this.transactionPools = [];
     }
 
     async start() {
@@ -75,7 +83,12 @@ export default class {
        //TODO: Block 추가시 바로 추가 안되도록 변경
         try {
           const previousBlock: Block = await this.db.getLeastBlock();
+          
+          newBlock.data.forEach((_tx: ITransaction) => {
+            this.updataUTXO(_tx);
+          });
 
+          this.updateTransactionPool(newBlock);
           
           const valid = Block.isValidNewBlock(newBlock, previousBlock);
           if (!valid) {
@@ -109,10 +122,18 @@ export default class {
         }
     }
 
-    async sendNewBlock(data: any) {
+    async sendNewBlock(data: ITransaction[]): Promise<Failable<Block, string>> {
         try {
           const previousBlock: Block = await this.db.getLeastBlock();
-          const newblock = await Block.generateBlock(previousBlock, data);
+          const adjustmentBlock: Block = this.getAdjustmentBlock();
+
+          const newblock = await Block.generateBlock(previousBlock, data, adjustmentBlock);
+          
+          newblock.data.forEach((_tx: ITransaction) => {
+            this.updataUTXO(_tx);
+          });
+
+          this.updateTransactionPool(newblock);
 
           this.logger.info(`Building a block for the transaction ${newblock.height} sended.`);
           this.logger.debug('Built new block', newblock);
@@ -120,12 +141,14 @@ export default class {
           const topic = this.configs.kafka.topics.pending;
           await this.__produce(topic, newblock);
           // Return the new block
-          return newblock.height;
+          return {isError: false, value: newblock};
         } catch(err) {
           this.logger.error(err);
+          return {isError: true, error: 'Unknown erorr'}
         }
     }
 
+    
     async __produce(topic: string, block: Block) {
         try {
             const serialized = this.serialize(block);
@@ -141,7 +164,7 @@ export default class {
         }
     }
 
-    async getAdjustmentBlock() {
+    getAdjustmentBlock() {
       const currentLength = getLength(this.db);
 
       if(currentLength < DIFFICULTY_ADJUSTMENT_INTERVAL ){
@@ -150,9 +173,100 @@ export default class {
         return adjustmentBlock;
 
       } else {
-        const adjustmentBlock = this.db.getBlockByHeight(currentLength - DIFFICULTY_ADJUSTMENT_INTERVAL);
+        const adjustmentBlock: Block = this.db.getBlockByHeight(currentLength - DIFFICULTY_ADJUSTMENT_INTERVAL);
         
         return adjustmentBlock;
       }
+    }
+
+    appendUTXO(utxo: IUnspentTxOut[]): void{
+      this.unspentTxOuts.push(...utxo);
+    }
+
+    appendTransactionPool(_transaction: ITransaction): void{
+      this.transactionPools.push(_transaction);
+    }
+
+    getUnspentTxOuts(): UnspentTxOut[]{
+      return this.unspentTxOuts;
+    }
+
+    updateUTXO(_tx: ITransaction): void {
+      const unspentTxOuts: UnspentTxOut[] = this.getUnspentTxOuts();
+
+      const newUnspendTxOuts = _tx.txOuts.map((txout, index) => {
+        return new UnspentTxOut(_tx.hash, index, txout.account, txout.amount);
+      })
+
+      const tmp = unspentTxOuts.filter((_v: UnspentTxOut) => {
+        const bool = _tx.txIns.find((v: TxIn) => {
+          return _v.txOutId === v.txOutId && _v.txOutIndex === v.txOutIndex;
+        });
+
+        return !bool;
+      }).concat(newUnspendTxOuts);
+
+      let unspentTmp: UnspentTxOut[] = [];
+      const result = tmp.reduce((acc, utxo) => {
+        const find = acc.find(({txOutId, txOutIndex}) => {
+          return txOutId === utxo.txOutId && txOutIndex === utxo.txOutIndex
+        });
+
+        if(!find) acc.push(utxo);
+        return acc;
+      }, unspentTmp);
+
+      this.unspentTxOuts = result;
+    }
+
+    updateTransactionPool(_newBlock: IBlock){
+      let txPool: ITransaction[] = this.transactionPools;
+
+      _newBlock.data.forEach((tx: ITransaction) => {
+        txPool = txPool.filter((txp) => {
+          txp.hash !== tx.hash;
+        });
+      });
+
+      this.transactionPools = txPool;
+    }
+
+    async miningBlock(_account: string): Promise<Failable<Block, string>> {
+      const leastBlock = this.db.getLeastBlock();
+
+      const txin: ITxIn = new TxIn('', leastBlock.height + 1);
+      const txout: ITxOut = new TxOut(_account, 50);
+      const coinbaseTransaction: Transaction = new Transaction([txin], [txout]);
+      // const utxo = coinbaseTransaction.createUTXO();
+      // this.appendUTXO(utxo);
+
+      return await this.sendNewBlock([coinbaseTransaction]);
+    }
+
+    updataUTXO(_tx: ITransaction): void {
+      const unspentTxOuts: UnspentTxOut[] = this.unspentTxOuts;
+
+      const newUnspendTxOuts = _tx.txOuts.map((txOut, index) => {
+        return new UnspentTxOut(_tx.hash, index, txOut.account, txOut.amount);
+      });
+
+      const tmp = unspentTxOuts.filter((_v: UnspentTxOut) => {
+        const bool = _tx.txIns.find((v: TxIn) => {
+          return _v.txOutId === v.txOutId && _v.txOutIndex === v.txOutIndex;
+        });
+
+        return !bool;
+      }).concat(newUnspendTxOuts);
+
+      let unspentTmp: UnspentTxOut[] = [];
+      const result = tmp.reduce((acc, utxo) => {
+        const find = acc.find(({ txOutId, txOutIndex}) => {
+          return txOutId === utxo.txOutId && txOutIndex === utxo.txOutIndex;
+        });
+        if(!find) acc.push(utxo);
+        return acc;
+      }, unspentTmp);
+
+      this.unspentTxOuts = result;
     }
 }
