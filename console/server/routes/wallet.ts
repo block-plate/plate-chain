@@ -23,7 +23,7 @@ router.get('/:account', async(req: any, res) => {
     const privateKey = Wallet.getWalletPrivateKey(account);
 
     const myWallet = new Wallet(privateKey);
-
+    
     console.log(req.sdk.getUnspentTxOuts());
     const balance = W.getBalance(account, req.sdk.getUnspentTxOuts());
     myWallet.balance = balance;

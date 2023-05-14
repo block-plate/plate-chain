@@ -240,7 +240,7 @@ export default class {
       // const utxo = coinbaseTransaction.createUTXO();
       // this.appendUTXO(utxo);
 
-      return await this.sendNewBlock([coinbaseTransaction]);
+      return await this.sendNewBlock([coinbaseTransaction, ...this.transactionPools]);
     }
 
     updataUTXO(_tx: ITransaction): void {
