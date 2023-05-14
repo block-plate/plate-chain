@@ -44,7 +44,7 @@ const MainBlock = styled.div`
             font-size: 3rem;
             font-weight: bold;
             min-width: 15rem;
-            background: white;
+            background: col;
             span{
                 font-weight: lighter;
                 font-size: 1.5rem;
