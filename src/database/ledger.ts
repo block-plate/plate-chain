@@ -11,7 +11,7 @@ export default class {
     
     async getBlocks(): Promise<any> {
         try{
-            const data = await BlockModel.find();
+            const data = await BlockModel.find({}, {sort:{timestamp: 'ASC'}});
             
             return data;
         } catch(error){
@@ -49,7 +49,7 @@ export default class {
     }
 
     async getLeastBlock(): Promise<any>{
-        const data = await BlockModel.findOne({}, {sort:{generated_time: 'ASC'}})
+        const data = await BlockModel.findOne({}, {sort:{timestamp: 'DESC'}})
 
         return data;
     }

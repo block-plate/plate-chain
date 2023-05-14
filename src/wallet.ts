@@ -59,7 +59,7 @@ export class Wallet {
 
         const myWallet = new this(_receivedTx.sender, _receivedTx.sigature, _unspentTxOuts);
         
-        // if(myWallet.balance < _receivedTx.amount) throw new Error('not enough balance');
+        if(myWallet.balance < _receivedTx.amount) throw new Error('not enough balance');
 
         const myUTXO: UnspentTxOut[] = UnspentTxOut.getMyUnspentTxOuts(myWallet.account, _unspentTxOuts);
         const tx: Transaction = Transaction.createTransaction(_receivedTx, myUTXO);

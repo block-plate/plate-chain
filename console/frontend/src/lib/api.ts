@@ -3,7 +3,7 @@ import axios from 'axios';
 axios.defaults.withCredentials = true;
 
 const api = axios.create({
-    baseURL: `http://localhost:3002/v1`,
+    baseURL: `/v1`,
 });
 
 export const getBlocks = () => api.get(`/block`)

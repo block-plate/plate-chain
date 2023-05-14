@@ -75,15 +75,15 @@ const Main = () => {
     // }
 
     const blockList = blocks.map((block: any) => {
-        const {id, header, data} = block;
-        const {event_id, generated_time, version} = header;
-        
+        const {id, hash, timestamp, data, nonce, difficulty} = block;
         
         return (
             <Table.Row key={id}>
                 <Table.Cell>{id}</Table.Cell>
-                <Table.Cell>{moment(parseInt(generated_time)).format('YYYY-MM-DD hh:mm:ss')}</Table.Cell>
-                <Table.Cell>{event_id}</Table.Cell>
+                <Table.Cell>{moment(parseInt(timestamp)).format('YYYY-MM-DD hh:mm:ss')}</Table.Cell>
+                <Table.Cell>{nonce}</Table.Cell>
+                <Table.Cell>{hash}</Table.Cell>
+                <Table.Cell>{difficulty}</Table.Cell>
                 <Table.Cell>{JSON.stringify(data)}</Table.Cell>
             </Table.Row>
         )
@@ -128,8 +128,10 @@ const Main = () => {
                         <Table.Header>
                         <Table.Row>
                             <Table.HeaderCell>id</Table.HeaderCell>
-                            <Table.HeaderCell>generated_time</Table.HeaderCell>
-                            <Table.HeaderCell>event_id</Table.HeaderCell>
+                            <Table.HeaderCell>timestamp</Table.HeaderCell>
+                            <Table.HeaderCell>nonce</Table.HeaderCell>
+                            <Table.HeaderCell>difficulty</Table.HeaderCell>
+                            <Table.HeaderCell>hash</Table.HeaderCell>
                             <Table.HeaderCell>data</Table.HeaderCell>
                         </Table.Row>
                         </Table.Header>
