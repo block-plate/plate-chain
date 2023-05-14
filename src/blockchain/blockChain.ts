@@ -1,9 +1,6 @@
-import merkle from 'merkle';
-
-const getLength = (db: any) => {
-  const {blocks} = db.getBlocks();
-
-  return blocks.rows.length;
+const getLength = async(db: any) => {
+  const response = await db.getBlocks();
+  return response.rows.length;
 }
 
 export {

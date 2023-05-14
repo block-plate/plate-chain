@@ -35,11 +35,11 @@ export default class {
         try{
             const {role, id, webconsole} = this.configs;
             if(role === 'peer'){
-              //const {consumer, producer} = await initKafka(this);
-              //this.db = await db(this.configs.db, this.logger);
+              const {consumer, producer} = await initKafka(this);
+              this.db = await db(this.configs.db, this.logger);
               this.server = await server(this.configs, this, this.db);
-              //this.consumer = consumer;
-              //this.producer = producer;
+              this.consumer = consumer;
+              this.producer = producer;
               await this.initBlockchain();
             }
             else if(role === 'channel'){
@@ -125,7 +125,7 @@ export default class {
     async sendNewBlock(data: ITransaction[]): Promise<Failable<Block, string>> {
         try {
           const previousBlock: Block = await this.db.getLeastBlock();
-          const adjustmentBlock: Block = this.getAdjustmentBlock();
+          const adjustmentBlock: Block = await this.getAdjustmentBlock();
 
           const newblock = await Block.generateBlock(previousBlock, data, adjustmentBlock);
           
@@ -164,8 +164,8 @@ export default class {
         }
     }
 
-    getAdjustmentBlock() {
-      const currentLength = getLength(this.db);
+    async getAdjustmentBlock() {
+      const currentLength = await getLength(this.db);
 
       if(currentLength < DIFFICULTY_ADJUSTMENT_INTERVAL ){
         const adjustmentBlock: Block = Block.getGenesisBlock();

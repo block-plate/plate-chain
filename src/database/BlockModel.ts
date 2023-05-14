@@ -9,9 +9,21 @@ const BlockSchema = new Schema({
     timestamp: Number,
     merkleRoot: String,
     hash: String,
-    data: [String],
     difficulty: Number,
-    nonce: Number
+    nonce: Number,
+    data: [
+        {
+            txIns: [{
+                txOutId: String,
+                txOutIndex: Number
+            }],
+            txOuts: [{
+                account: String,
+                amount: Number
+            }],
+            hash: String
+        }
+    ]
 })
 
 export const BlockModel = ottoman.model('Block', BlockSchema);

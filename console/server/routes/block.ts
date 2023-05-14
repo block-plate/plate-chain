@@ -27,11 +27,11 @@ router.get('/', async(req: any, res) => {
     const offset =  req.header('offset');
     const limit = req.header('limit');
     try{
-        // const blocks = await req.db.getBlock(data.user, offset, limit);
+        const blocks = await req.db.getBlocks();
 
-        // return res.json({
-        //     blocks: blocks
-        // });
+        return res.json({
+            blocks: blocks
+        });
     }catch(err){
         console.log(err);
     }

@@ -58,6 +58,7 @@ export default function useWallet(){
         
         try{
             const response = await sendTransaction(data);
+            toast.success("Success to Send PTC");
         } catch (err){
             if('response' in (err as any)){
                 toast.error((err as any).response.data.error);
