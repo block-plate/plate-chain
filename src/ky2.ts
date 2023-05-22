@@ -216,6 +216,7 @@ export default class {
         return acc;
       }, unspentTmp);
 
+      // 이 부분 DB로 변경
       this.unspentTxOuts = result;
     }
 
