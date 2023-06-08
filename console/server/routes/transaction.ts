@@ -30,6 +30,7 @@ router.post('/', (req: any, res) => {
 
         req.sdk.updateUTXO(tx);
 
+        res.json({tx: tx});
 
     } catch(e){
         if( e instanceof Error){ 
@@ -40,7 +41,7 @@ router.post('/', (req: any, res) => {
         }
     }
 
-    res.json({});
+    
 });
 
 export default router;

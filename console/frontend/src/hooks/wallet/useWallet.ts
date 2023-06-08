@@ -13,6 +13,7 @@ export default function useWallet(){
     });
     const [amount, setAmount] = useState<string>()
     const [received, setReceived] = useState<string>();
+    const [txId, setTxId] = useState();
 
     const getWalletList = async() => {
         const wallets = await getWallets();
@@ -59,6 +60,8 @@ export default function useWallet(){
         try{
             const response = await sendTransaction(data);
             toast.success("Success to Send PTC");
+            console.log(response.data.tx);
+            setTxId(response.data.tx.hash);
         } catch (err){
             if('response' in (err as any)){
                 toast.error((err as any).response.data.error);
@@ -74,6 +77,6 @@ export default function useWallet(){
     }, []);
 
     return {
-        walletOptions, wallet, handleSubmitTransaction, onSelectAccount, setReceived, setAmount
+        walletOptions, wallet, handleSubmitTransaction, onSelectAccount, setReceived, setAmount, txId
     }
 }
