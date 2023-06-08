@@ -88,7 +88,7 @@ const StyledWallet = styled.div`
 `
 
 const Wallet = () => {
-    const {walletOptions, wallet, handleSubmitTransaction, onSelectAccount, setReceived, setAmount} = useWallet();
+    const {walletOptions, wallet, handleSubmitTransaction, onSelectAccount, setReceived, setAmount, txId} = useWallet();
 
     return (
         <StyledWallet>
@@ -124,6 +124,7 @@ const Wallet = () => {
                         disabled={!wallet.account}
                         />
                     <Button disabled={!wallet.account} onClick={handleSubmitTransaction}>Submit</Button>
+                    <Input disabled value={txId}></Input>
                 </div>
             </main>
         </StyledWallet>
