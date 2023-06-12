@@ -38,10 +38,10 @@
 
 ### 노드 실행 방법
 
-[NPM 저장소](https://www.npmjs.com/) 에서 `KY2 Chain`을 다운 받습니다.
+[NPM 저장소](https://www.npmjs.com/) 에서 `plate Chain`을 다운 받습니다.
 
 ```
-$ npm install ky2
+$ npm install platechain
 ```
 
 카프카가 작동중이지 않다면 `Docker-compose` 로 카프카를 구동시킨 뒤 피어를 가동시킵니다. 
@@ -52,18 +52,18 @@ $ npm start
 
 ### 카프카 실행
 
-기본적으로 [카프카 Channel 서버가](http://kafka.ky2chain.com) 실행중이지만
-만약 Ky2 서비스 이외에 다른 목적으로 사용하려면 `docker-compsoe/kafka.yaml` 을 실행시켜서 카프카 서버를 구동시켜줍니다.
+기본적으로 [카프카 Channel 서버가](http://kafka.plachain.shop) 실행중이지만
+만약 Platechain 서비스 이외에 다른 목적으로 사용하려면 `docker-compsoe/kafka.yaml` 을 실행시켜서 카프카 서버를 구동시켜줍니다.
 
 ```
 $ cd docker-compose
 $ docker-compose -f kafka.yaml -f network.yaml up
 ```
 
-## KY2 Chain 동작 원리
+## Plate Chain 동작 원리
 
 1. 피어를 생성하면 자동으로 컨테이너가 생성됩니다.
-2. 생성된 컨테이너를 Nginx Unit 이 자동으로 리버스 프록시를 통해서 ky2 도메인과 연결해서 반환합니다. ex) eunsol.ky2chain.com
+2. 생성된 컨테이너를 Nginx Unit 이 자동으로 리버스 프록시를 통해서 platechain 도메인과 연결해서 반환합니다. ex) eunsol.platechain.shop
 3. 해당 도메인에 접속하면 블록체인 탐색기로 데이터 확인이 가능합니다.
 4. 이후에 해당 피어에 데이터가 추가되면 블록체인이 검증 후 카프카를 통해 다른 살아있는 노드로 브로드케스팅하게됩니다.
 
